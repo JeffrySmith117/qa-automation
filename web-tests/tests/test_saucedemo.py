@@ -11,9 +11,7 @@ VALID_PASS = "secret_sauce"
 class TestLogin:
     def test_successful_login(self, driver):
         LoginPage(driver).login(VALID_USER, VALID_PASS)
-
-        inventory = InventoryPage(driver)
-        assert inventory.is_loaded()
+        assert InventoryPage(driver).is_loaded()
 
     def test_invalid_login_shows_error(self, driver):
         login = LoginPage(driver)
@@ -24,32 +22,30 @@ class TestLogin:
 class TestPurchaseFlow:
     def test_add_products_to_cart(self, driver):
         LoginPage(driver).login(VALID_USER, VALID_PASS)
-
         inventory = InventoryPage(driver)
         inventory.add_products(count=2)
-
         assert inventory.get_cart_count() == 2
 
     def test_full_purchase_e2e(self, driver):
         """Complete E2E: login → add products → checkout → confirm."""
-        # Login com usuario fresh (reset via URL)
-        driver.get("https://www.saucedemo.com/")
-        driver.delete_all_cookies()
-        driver.get("https://www.saucedemo.com/")
-
+        # Login direto — scope=function garante browser limpo
         LoginPage(driver).login(VALID_USER, VALID_PASS)
 
         # Adiciona 2 produtos
         inventory = InventoryPage(driver)
         inventory.add_products(count=2)
+
+        # Verifica badge antes de ir ao carrinho
+        assert inventory.get_cart_count() == 2
+
         inventory.go_to_cart()
 
-        # Verifica carrinho
+        # Verifica itens no carrinho
         cart = CartPage(driver)
-        assert cart.get_item_count() >= 2
+        assert cart.get_item_count() == 2
         cart.proceed_to_checkout()
 
-        # Preenche dados e finaliza
+        # Finaliza compra
         checkout = CheckoutPage(driver)
         checkout.fill_customer_info("QA", "Tester", "01310-100")
         checkout.finish_purchase()
