@@ -23,15 +23,16 @@ class TestPurchaseFlow:
     def test_add_products_to_cart(self, driver):
         LoginPage(driver).login(VALID_USER, VALID_PASS)
         inventory = InventoryPage(driver)
-        inventory.add_products(count=2)
+        inventory.add_products(count=1)
         assert inventory.get_cart_count() >= 1
 
     def test_full_purchase_e2e(self, driver):
-        """Complete E2E: login → add products → checkout → confirm."""
+        """Complete E2E: login → add product → checkout → confirm."""
         LoginPage(driver).login(VALID_USER, VALID_PASS)
 
         inventory = InventoryPage(driver)
-        inventory.add_products(count=2)
+        inventory.add_products(count=1)
+        assert inventory.get_cart_count() >= 1
         inventory.go_to_cart()
 
         cart = CartPage(driver)

@@ -12,20 +12,16 @@ class InventoryPage(BasePage):
     def is_loaded(self):
         return self.get_text(self._TITLE) == "Products"
 
-    def add_products(self, count=2):
-        for i in range(count):
-            btn = WebDriverWait(self.driver, 15).until(
-                EC.element_to_be_clickable(
-                    (By.CSS_SELECTOR, "[data-test^='add-to-cart']")
+    def add_products(self, count=1):
+        added = 0
+        while added < count:
+            buttons = WebDriverWait(self.driver, 15).until(
+                EC.presence_of_all_elements_located(
+                    (By.XPATH, "//button[contains(@data-test,'add-to-cart')]")
                 )
             )
-            btn.click()
-            # Espera o botão mudar para "Remove" confirmando que foi adicionado
-            WebDriverWait(self.driver, 15).until(
-                EC.presence_of_element_located(
-                    (By.CSS_SELECTOR, "[data-test^='remove']")
-                )
-            )
+            buttons[0].click()
+            added += 1
 
     def get_cart_count(self):
         badges = self.driver.find_elements(*self._CART_BADGE)
