@@ -13,19 +13,27 @@ class InventoryPage(BasePage):
         return self.get_text(self._TITLE) == "Products"
 
     def add_products(self, count=1):
-        added = 0
-        while added < count:
-            buttons = WebDriverWait(self.driver, 15).until(
-                EC.presence_of_all_elements_located(
-                    (By.XPATH, "//button[contains(@data-test,'add-to-cart')]")
+        for i in range(count):
+            btn = WebDriverWait(self.driver, 15).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, "[data-test^='add-to-cart']")
                 )
             )
-            buttons[0].click()
-            added += 1
+            # Usa JavaScript para clicar — funciona em qualquer ambiente
+            self.driver.execute_script("arguments[0].click();", btn)
+            # Espera o badge aparecer confirmando o clique
+            WebDriverWait(self.driver, 15).until(
+                EC.presence_of_element_located(
+                    (By.CLASS_NAME, "shopping_cart_badge")
+                )
+            )
 
     def get_cart_count(self):
         badges = self.driver.find_elements(*self._CART_BADGE)
         return int(badges[0].text) if badges else 0
 
     def go_to_cart(self):
-        self.click(self._CART_ICON)
+        self.driver.execute_script(
+            "arguments[0].click();",
+            self.driver.find_element(*self._CART_ICON)
+        )
