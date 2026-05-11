@@ -14,6 +14,8 @@ def driver():
     options.add_argument("--disable-software-rasterizer")
     options.add_argument("--window-size=1280,900")
     options.add_argument("--remote-debugging-port=9222")
+    options.add_argument("--enable-logging")
+    options.add_argument("--v=1")
 
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(20)

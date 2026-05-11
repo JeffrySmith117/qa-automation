@@ -10,10 +10,19 @@ VALID_PASS = "secret_sauce"
 
 
 def js_click(driver, by, value):
-    el = WebDriverWait(driver, 15).until(
+    el = WebDriverWait(driver, 30).until(
         EC.presence_of_element_located((by, value))
     )
     driver.execute_script("arguments[0].click();", el)
+
+
+def fill_field(driver, field_id, text):
+    el = WebDriverWait(driver, 30).until(
+        EC.visibility_of_element_located((By.ID, field_id))
+    )
+    el.clear()
+    el.click()
+    el.send_keys(text)
 
 
 class TestLogin:
@@ -40,39 +49,39 @@ class TestPurchaseFlow:
 
         LoginPage(driver).login(VALID_USER, VALID_PASS)
 
-        # Adiciona produto pelo ID fixo — mais estável no CI
         wait.until(
             EC.element_to_be_clickable(
                 (By.ID, "add-to-cart-sauce-labs-backpack")
             )
         ).click()
 
-        # Vai pro carrinho
         js_click(driver, By.CLASS_NAME, "shopping_cart_link")
-
-        # Checkout
         wait.until(EC.url_contains("cart"))
+
         js_click(driver, By.ID, "checkout")
-
-        # Preenche formulário
         wait.until(EC.url_contains("checkout-step-one"))
+
+        fill_field(driver, "first-name", "QA")
+        fill_field(driver, "last-name", "Tester")
+        fill_field(driver, "postal-code", "12345")
+
+        # Debug — imprime valores dos campos
+        print("first-name:", driver.find_element(By.ID, "first-name").get_attribute("value"))
+        print("last-name:", driver.find_element(By.ID, "last-name").get_attribute("value"))
+        print("postal-code:", driver.find_element(By.ID, "postal-code").get_attribute("value"))
+
         wait.until(
-            EC.visibility_of_element_located((By.ID, "first-name"))
-        ).send_keys("QA")
-        driver.find_element(By.ID, "last-name").send_keys("Tester")
-        driver.find_element(By.ID, "postal-code").send_keys("12345")
+            EC.element_to_be_clickable((By.ID, "continue"))
+        ).click()
 
-        js_click(driver, By.ID, "continue")
-
-        # Finaliza
         wait.until(EC.url_contains("checkout-step-two"))
+
         finish = wait.until(
-            EC.presence_of_element_located((By.ID, "finish"))
+            EC.element_to_be_clickable((By.ID, "finish"))
         )
         driver.execute_script("arguments[0].scrollIntoView(true);", finish)
         driver.execute_script("arguments[0].click();", finish)
 
-        # Confirma
         wait.until(EC.url_contains("checkout-complete"))
         msg = wait.until(
             EC.visibility_of_element_located((By.CLASS_NAME, "complete-header"))
