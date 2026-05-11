@@ -39,14 +39,10 @@ class TestPurchaseFlow:
         """Complete E2E: login → add product → checkout → confirm."""
         LoginPage(driver).login(VALID_USER, VALID_PASS)
 
-        # Adiciona produto via JavaScript
         inventory = InventoryPage(driver)
         inventory.add_products(count=1)
 
-        # Vai pro carrinho via JavaScript
         js_click(driver, By.CLASS_NAME, "shopping_cart_link")
-
-        # Checkout via JavaScript
         js_click(driver, By.ID, "checkout")
 
         # Preenche dados
@@ -57,13 +53,15 @@ class TestPurchaseFlow:
         driver.find_element(By.ID, "last-name").send_keys("Tester")
         driver.find_element(By.ID, "postal-code").send_keys("01310-100")
 
-        # Continue via JavaScript
         js_click(driver, By.ID, "continue")
 
-        # Finish via JavaScript
+        # Espera a URL mudar para checkout-step-two
+        WebDriverWait(driver, 15).until(
+            EC.url_contains("checkout-step-two")
+        )
+
         js_click(driver, By.ID, "finish")
 
-        # Confirma mensagem
         msg = WebDriverWait(driver, 15).until(
             EC.presence_of_element_located((By.CLASS_NAME, "complete-header"))
         ).text
