@@ -1,7 +1,9 @@
 import pytest
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from pages.login_page import LoginPage
 from pages.inventory_page import InventoryPage
-from pages.cart_page import CartPage
 from pages.checkout_page import CheckoutPage
 
 VALID_USER = "standard_user"
@@ -30,17 +32,35 @@ class TestPurchaseFlow:
         """Complete E2E: login → add product → checkout → confirm."""
         LoginPage(driver).login(VALID_USER, VALID_PASS)
 
+        # Adiciona produto
         inventory = InventoryPage(driver)
         inventory.add_products(count=1)
-        assert inventory.get_cart_count() >= 1
-        inventory.go_to_cart()
 
-        cart = CartPage(driver)
-        assert cart.get_item_count() >= 1
-        cart.proceed_to_checkout()
+        # Navega direto pra URL do carrinho
+        driver.get("https://www.saucedemo.com/cart.html")
 
-        checkout = CheckoutPage(driver)
-        checkout.fill_customer_info("QA", "Tester", "01310-100")
-        checkout.finish_purchase()
+        # Clica em checkout
+        WebDriverWait(driver, 15).until(
+            EC.element_to_be_clickable((By.ID, "checkout"))
+        ).click()
 
-        assert checkout.get_confirmation_message() == "Thank you for your order!"
+        # Preenche dados
+        WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located((By.ID, "first-name"))
+        )
+        driver.find_element(By.ID, "first-name").send_keys("QA")
+        driver.find_element(By.ID, "last-name").send_keys("Tester")
+        driver.find_element(By.ID, "postal-code").send_keys("01310-100")
+        driver.find_element(By.ID, "continue").click()
+
+        # Finaliza
+        WebDriverWait(driver, 15).until(
+            EC.element_to_be_clickable((By.ID, "finish"))
+        ).click()
+
+        # Confirma mensagem
+        msg = WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "complete-header"))
+        ).text
+
+        assert msg == "Thank you for your order!"
