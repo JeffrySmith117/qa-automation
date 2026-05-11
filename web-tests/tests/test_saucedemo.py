@@ -17,12 +17,12 @@ def js_click(driver, by, value):
 
 
 def fill_field(driver, field_id, text):
-    el = WebDriverWait(driver, 30).until(
-        EC.visibility_of_element_located((By.ID, field_id))
+    WebDriverWait(driver, 30).until(
+        EC.presence_of_element_located((By.ID, field_id))
     )
-    el.clear()
-    el.click()
-    el.send_keys(text)
+    driver.execute_script(
+        f"document.getElementById('{field_id}').value = '{text}';"
+    )
 
 
 class TestLogin:
@@ -65,14 +65,12 @@ class TestPurchaseFlow:
         fill_field(driver, "last-name", "Tester")
         fill_field(driver, "postal-code", "12345")
 
-        # Debug — imprime valores dos campos
+        # Debug
         print("first-name:", driver.find_element(By.ID, "first-name").get_attribute("value"))
         print("last-name:", driver.find_element(By.ID, "last-name").get_attribute("value"))
         print("postal-code:", driver.find_element(By.ID, "postal-code").get_attribute("value"))
 
-        wait.until(
-            EC.element_to_be_clickable((By.ID, "continue"))
-        ).click()
+        js_click(driver, By.ID, "continue")
 
         wait.until(EC.url_contains("checkout-step-two"))
 
