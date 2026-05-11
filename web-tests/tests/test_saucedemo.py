@@ -2,41 +2,44 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from pages.login_page import LoginPage
-from utils.js_helpers import js_click
-
 
 def test_full_purchase_e2e(driver):
-    login_page = LoginPage(driver)
+    # abre site
+    driver.get("https://www.saucedemo.com/")
 
-    login_page.open()
-    login_page.login("standard_user", "secret_sauce")
+    # login
+    driver.find_element(By.ID, "user-name").send_keys("standard_user")
+    driver.find_element(By.ID, "password").send_keys("secret_sauce")
+    driver.find_element(By.ID, "login-button").click()
 
     # adiciona produto
-    js_click(driver, By.ID, "add-to-cart-sauce-labs-backpack")
+    WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "add-to-cart-sauce-labs-backpack"))
+    ).click()
 
     # abre carrinho
-    js_click(driver, By.CLASS_NAME, "shopping_cart_link")
+    driver.find_element(By.CLASS_NAME, "shopping_cart_link").click()
 
     # checkout
-    js_click(driver, By.ID, "checkout")
+    WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "checkout"))
+    ).click()
 
-    # preenche formulário
+    # formulário
     driver.find_element(By.ID, "first-name").send_keys("QA")
     driver.find_element(By.ID, "last-name").send_keys("Tester")
     driver.find_element(By.ID, "postal-code").send_keys("12345")
 
-    # continua
-    js_click(driver, By.ID, "continue")
+    driver.find_element(By.ID, "continue").click()
 
-    # espera botão finish aparecer
-    finish_button = WebDriverWait(driver, 10).until(
+    # finish
+    WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, "finish"))
-    )
+    ).click()
 
-    finish_button.click()
-
-    # valida compra
-    success_message = driver.find_element(By.CLASS_NAME, "complete-header").text
+    # valida sucesso
+    success_message = WebDriverWait(driver, 10).until(
+        EC.visibility_of_element_located((By.CLASS_NAME, "complete-header"))
+    ).text
 
     assert success_message == "Thank you for your order!"
