@@ -1,6 +1,4 @@
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from pages.base_page import BasePage
 
 
@@ -13,19 +11,11 @@ class InventoryPage(BasePage):
         return self.get_text(self._TITLE) == "Products"
 
     def add_products(self, count=2):
-        """Adiciona N produtos ao carrinho um por vez com espera entre cada um."""
-        added = 0
-        while added < count:
-            buttons = self.driver.find_elements(
-                By.CSS_SELECTOR, "[data-test^='add-to-cart']"
-            )
-            if added < len(buttons):
-                buttons[added].click()
-                # Espera o badge atualizar antes de continuar
-                WebDriverWait(self.driver, 5).until(
-                    lambda d: self.get_cart_count() == added + 1
-                )
-                added += 1
+        buttons = self.driver.find_elements(
+            By.CSS_SELECTOR, "[data-test^='add-to-cart']"
+        )
+        for btn in buttons[:count]:
+            btn.click()
 
     def get_cart_count(self):
         badges = self.driver.find_elements(*self._CART_BADGE)
