@@ -1,3 +1,8 @@
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from selenium.webdriver.common.by import By
 from pages.login_page import LoginPage
 from utils.js_helpers import js_click, js_type
