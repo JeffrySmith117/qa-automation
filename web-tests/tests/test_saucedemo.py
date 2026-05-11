@@ -4,7 +4,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from pages.login_page import LoginPage
 from pages.inventory_page import InventoryPage
-from pages.checkout_page import CheckoutPage
 
 VALID_USER = "standard_user"
 VALID_PASS = "secret_sauce"
@@ -15,6 +14,16 @@ def js_click(driver, by, value):
         EC.presence_of_element_located((by, value))
     )
     driver.execute_script("arguments[0].click();", el)
+
+
+def js_type(driver, by, value, text):
+    el = WebDriverWait(driver, 15).until(
+        EC.presence_of_element_located((by, value))
+    )
+    driver.execute_script(
+        "arguments[0].value = arguments[1]; arguments[0].dispatchEvent(new Event('input'));",
+        el, text
+    )
 
 
 class TestLogin:
@@ -45,17 +54,14 @@ class TestPurchaseFlow:
         js_click(driver, By.CLASS_NAME, "shopping_cart_link")
         js_click(driver, By.ID, "checkout")
 
-        # Preenche dados
-        WebDriverWait(driver, 15).until(
-            EC.presence_of_element_located((By.ID, "first-name"))
-        )
-        driver.find_element(By.ID, "first-name").send_keys("QA")
-        driver.find_element(By.ID, "last-name").send_keys("Tester")
-        driver.find_element(By.ID, "postal-code").send_keys("01310-100")
+        # Preenche dados via JavaScript
+        js_type(driver, By.ID, "first-name", "first-name", "QA")
+        js_type(driver, By.ID, "last-name", "last-name", "Tester")
+        js_type(driver, By.ID, "postal-code", "postal-code", "01310100")
 
         js_click(driver, By.ID, "continue")
 
-        # Espera a URL mudar para checkout-step-two
+        # Espera pagina de overview
         WebDriverWait(driver, 15).until(
             EC.url_contains("checkout-step-two")
         )
