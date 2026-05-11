@@ -4,7 +4,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 def test_full_purchase_e2e(driver):
-    wait = WebDriverWait(driver, 20)
+    wait = WebDriverWait(driver, 30)
 
     # abre site
     driver.get("https://www.saucedemo.com/")
@@ -19,88 +19,73 @@ def test_full_purchase_e2e(driver):
         "password"
     ).send_keys("secret_sauce")
 
-    login_button = wait.until(
-        EC.presence_of_element_located((By.ID, "login-button"))
-    )
+    driver.find_element(
+        By.ID,
+        "login-button"
+    ).click()
 
-    driver.execute_script(
-        "arguments[0].click();",
-        login_button
+    # espera inventário carregar
+    wait.until(
+        EC.url_contains("inventory")
     )
 
     # adiciona produto
-    add_button = wait.until(
-        EC.presence_of_element_located(
+    wait.until(
+        EC.element_to_be_clickable(
             (By.ID, "add-to-cart-sauce-labs-backpack")
         )
-    )
-
-    driver.execute_script(
-        "arguments[0].click();",
-        add_button
-    )
+    ).click()
 
     # abre carrinho
-    cart_button = wait.until(
-        EC.presence_of_element_located(
+    wait.until(
+        EC.element_to_be_clickable(
             (By.CLASS_NAME, "shopping_cart_link")
         )
-    )
-
-    driver.execute_script(
-        "arguments[0].click();",
-        cart_button
-    )
+    ).click()
 
     # checkout
-    checkout_button = wait.until(
-        EC.presence_of_element_located((By.ID, "checkout"))
-    )
+    wait.until(
+        EC.element_to_be_clickable((By.ID, "checkout"))
+    ).click()
 
-    driver.execute_script(
-        "arguments[0].click();",
-        checkout_button
-    )
-
-    # espera página checkout carregar
+    # espera checkout step one
     wait.until(
         EC.url_contains("checkout-step-one")
     )
 
     # formulário
-    first_name = wait.until(
+    wait.until(
         EC.visibility_of_element_located((By.ID, "first-name"))
-    )
+    ).send_keys("QA")
 
-    first_name.clear()
-    first_name.send_keys("QA")
+    driver.find_element(
+        By.ID,
+        "last-name"
+    ).send_keys("Tester")
 
-    last_name = driver.find_element(By.ID, "last-name")
-    last_name.clear()
-    last_name.send_keys("Tester")
-
-    postal_code = driver.find_element(By.ID, "postal-code")
-    postal_code.clear()
-    postal_code.send_keys("12345")
+    driver.find_element(
+        By.ID,
+        "postal-code"
+    ).send_keys("12345")
 
     # continue
-    continue_button = wait.until(
-        EC.presence_of_element_located((By.ID, "continue"))
-    )
+    wait.until(
+        EC.element_to_be_clickable((By.ID, "continue"))
+    ).click()
 
-    driver.execute_script(
-        "arguments[0].click();",
-        continue_button
-    )
-
-    # espera próxima etapa
+    # espera checkout step two
     wait.until(
         EC.url_contains("checkout-step-two")
     )
 
     # finish
     finish_button = wait.until(
-        EC.presence_of_element_located((By.ID, "finish"))
+        EC.element_to_be_clickable((By.ID, "finish"))
+    )
+
+    driver.execute_script(
+        "arguments[0].scrollIntoView(true);",
+        finish_button
     )
 
     driver.execute_script(
@@ -108,11 +93,16 @@ def test_full_purchase_e2e(driver):
         finish_button
     )
 
+    # espera página final
+    wait.until(
+        EC.url_contains("checkout-complete")
+    )
+
     # valida sucesso
     success_message = wait.until(
         EC.visibility_of_element_located(
             (By.CLASS_NAME, "complete-header")
         )
-    ).text
+    )
 
-    assert success_message == "Thank you for your order!"
+    assert success_message.text == "Thank you for your order!"
