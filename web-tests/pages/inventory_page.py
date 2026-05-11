@@ -1,4 +1,6 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from pages.base_page import BasePage
 
 
@@ -11,11 +13,19 @@ class InventoryPage(BasePage):
         return self.get_text(self._TITLE) == "Products"
 
     def add_products(self, count=2):
-        buttons = self.driver.find_elements(
-            By.CSS_SELECTOR, "[data-test^='add-to-cart']"
-        )
-        for btn in buttons[:count]:
+        for i in range(count):
+            btn = WebDriverWait(self.driver, 15).until(
+                EC.element_to_be_clickable(
+                    (By.CSS_SELECTOR, "[data-test^='add-to-cart']")
+                )
+            )
             btn.click()
+            # Espera o botão mudar para "Remove" confirmando que foi adicionado
+            WebDriverWait(self.driver, 15).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, "[data-test^='remove']")
+                )
+            )
 
     def get_cart_count(self):
         badges = self.driver.find_elements(*self._CART_BADGE)
