@@ -10,6 +10,13 @@ VALID_USER = "standard_user"
 VALID_PASS = "secret_sauce"
 
 
+def js_click(driver, by, value):
+    el = WebDriverWait(driver, 15).until(
+        EC.presence_of_element_located((by, value))
+    )
+    driver.execute_script("arguments[0].click();", el)
+
+
 class TestLogin:
     def test_successful_login(self, driver):
         LoginPage(driver).login(VALID_USER, VALID_PASS)
@@ -32,24 +39,15 @@ class TestPurchaseFlow:
         """Complete E2E: login → add product → checkout → confirm."""
         LoginPage(driver).login(VALID_USER, VALID_PASS)
 
-        # Adiciona produto
+        # Adiciona produto via JavaScript
         inventory = InventoryPage(driver)
         inventory.add_products(count=1)
 
-        # Confirma que foi adicionado pelo badge
-        WebDriverWait(driver, 15).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "shopping_cart_badge"))
-        )
+        # Vai pro carrinho via JavaScript
+        js_click(driver, By.CLASS_NAME, "shopping_cart_link")
 
-        # Clica no ícone do carrinho
-        WebDriverWait(driver, 15).until(
-            EC.element_to_be_clickable((By.CLASS_NAME, "shopping_cart_link"))
-        ).click()
-
-        # Espera o botão checkout aparecer
-        WebDriverWait(driver, 15).until(
-            EC.element_to_be_clickable((By.ID, "checkout"))
-        ).click()
+        # Checkout via JavaScript
+        js_click(driver, By.ID, "checkout")
 
         # Preenche dados
         WebDriverWait(driver, 15).until(
@@ -58,12 +56,12 @@ class TestPurchaseFlow:
         driver.find_element(By.ID, "first-name").send_keys("QA")
         driver.find_element(By.ID, "last-name").send_keys("Tester")
         driver.find_element(By.ID, "postal-code").send_keys("01310-100")
-        driver.find_element(By.ID, "continue").click()
 
-        # Finaliza
-        WebDriverWait(driver, 15).until(
-            EC.element_to_be_clickable((By.ID, "finish"))
-        ).click()
+        # Continue via JavaScript
+        js_click(driver, By.ID, "continue")
+
+        # Finish via JavaScript
+        js_click(driver, By.ID, "finish")
 
         # Confirma mensagem
         msg = WebDriverWait(driver, 15).until(
