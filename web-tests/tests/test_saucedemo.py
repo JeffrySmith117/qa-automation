@@ -36,10 +36,17 @@ class TestPurchaseFlow:
         inventory = InventoryPage(driver)
         inventory.add_products(count=1)
 
-        # Navega direto pra URL do carrinho
-        driver.get("https://www.saucedemo.com/cart.html")
+        # Confirma que foi adicionado pelo badge
+        WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "shopping_cart_badge"))
+        )
 
-        # Clica em checkout
+        # Clica no ícone do carrinho
+        WebDriverWait(driver, 15).until(
+            EC.element_to_be_clickable((By.CLASS_NAME, "shopping_cart_link"))
+        ).click()
+
+        # Espera o botão checkout aparecer
         WebDriverWait(driver, 15).until(
             EC.element_to_be_clickable((By.ID, "checkout"))
         ).click()
