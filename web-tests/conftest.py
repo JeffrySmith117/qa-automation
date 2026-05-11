@@ -13,9 +13,11 @@ def driver():
     options.add_argument("--disable-gpu")
     options.add_argument("--disable-software-rasterizer")
     options.add_argument("--window-size=1280,900")
+    options.add_argument("--remote-debugging-port=9222")
 
     driver = webdriver.Chrome(options=options)
-    driver.implicitly_wait(10)
+    driver.implicitly_wait(20)
+    driver.set_page_load_timeout(30)
 
     yield driver
     driver.quit()
