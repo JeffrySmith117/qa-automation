@@ -1,4 +1,9 @@
-def test_full_purchase_e2e(self, driver):
+from selenium.webdriver.common.by import By
+from pages.login_page import LoginPage
+from utils.js_helpers import js_click, js_type
+
+
+def test_full_purchase_e2e(driver):
     login_page = LoginPage(driver)
 
     login_page.open()
