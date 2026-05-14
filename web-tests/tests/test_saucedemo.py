@@ -20,9 +20,14 @@ def fill_field(driver, field_id, text):
     WebDriverWait(driver, 30).until(
         EC.presence_of_element_located((By.ID, field_id))
     )
-    driver.execute_script(
-        f"document.getElementById('{field_id}').value = '{text}';"
-    )
+    driver.execute_script(f"""
+        var el = document.getElementById('{field_id}');
+        var nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+            window.HTMLInputElement.prototype, 'value').set;
+        nativeInputValueSetter.call(el, '{text}');
+        el.dispatchEvent(new Event('input', {{ bubbles: true }}));
+        el.dispatchEvent(new Event('change', {{ bubbles: true }}));
+    """)
 
 
 class TestLogin:
